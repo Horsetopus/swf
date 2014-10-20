@@ -61,13 +61,15 @@ class Frame
 				// The PlaceObject tag has no character id defined:
 				// This means that the previous character is reused 
 				// and most likely modified by transforms
+				
 				frameObject.lastModifiedAtIndex = tagIndex;
 				frameObject.isKeyframe = false;
 			} else {					
 				// A character id is defined:
 				// This means that the previous character is replaced 
 				// (possible transforms defined in previous frames are discarded)
-				if(tag.hasName || tag.hasMatrix || tag.hasColorTransform || tag.hasFilterList) {
+				if (tag.hasName || tag.hasMatrix || tag.hasColorTransform || tag.hasFilterList) {
+					
 					frameObject.lastModifiedAtIndex = tagIndex;
 				}
 				frameObject.isKeyframe = true;

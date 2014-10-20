@@ -24,6 +24,10 @@ class FrameObject
 	// The index of the layer this object resides on 
 	public var layer:Int = -1;
 	
+	
+	public var id:Int;
+	
+	
 	public function new(depth:Int, clipDepth:Int, characterId:Int, className:String, placedAtIndex:Int, lastModifiedAtIndex:Int = 0, isKeyframe:Bool = false)
 	{
 		this.depth = depth;
@@ -34,6 +38,8 @@ class FrameObject
 		this.lastModifiedAtIndex = lastModifiedAtIndex;
 		this.isKeyframe = isKeyframe;
 		this.layer = -1;
+		
+		id = placedAtIndex;
 	}
 	
 	public function clone():FrameObject {
