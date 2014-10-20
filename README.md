@@ -1,5 +1,3 @@
-[![Stories in Ready](https://badge.waffle.io/openfl/swf.png?label=ready)](https://waffle.io/openfl/swf)
-swf
-===
+Trying to fix the playback issues of the Openfl/swf libray.
 
-Provides SWF parsing and rendering for C++, Flash and HTML5
+test the FlashDevelop project inside the Test.zip file.

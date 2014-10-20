@@ -43,6 +43,7 @@ import format.swf.tags.TagSoundStreamHead2;
 import format.swf.tags.TagSymbolClass;
 import format.swf.timeline.Frame;
 import format.swf.timeline.FrameObject;
+import format.swf.timeline.Script;
 import format.swf.timeline.Layer;
 import format.swf.timeline.LayerStrip;
 import format.swf.timeline.Scene;
@@ -75,6 +76,9 @@ class SWFTimelineContainer extends SWFEventDispatcher
 	public var frames(default, null):Array<Frame>;
 	public var layers(default, null):Array<Layer>;
 	public var soundStream(default, null):SoundStream;
+	
+	public var script( default, null):Script;
+		
 
 	public var frameLabels(default, null):Map<Int, String>;
 	public var frameIndexes(default, null):Map<String, Int>;
@@ -145,10 +149,20 @@ class SWFTimelineContainer extends SWFEventDispatcher
 	}
 	
 	public function parseTags(data:SWFData, version:Int):Void {
+		
 		var tag:ITag;
 		parseTagsInit(data, version);
 		while ((tag = parseTag(data)) != null && tag.type != TagEnd.TYPE) {};
 		parseTagsFinalize();
+		
+		var frame:Frame;
+		script = new Script();
+		for ( frame in frames ) {
+			
+			script.pushFrame( tags, frame );
+		}
+		
+		trace( script.toString() );
 	}
 	
 	public function parseTagsAsync(data:SWFData, version:Int):Void {
@@ -364,6 +378,7 @@ class SWFTimelineContainer extends SWFEventDispatcher
 	}
 
 	private function processDisplayListTag(tag:IDisplayListTag, currentTagIndex:Int):Void {
+		
 		switch(cast (tag.type, Int)) {
 			case TagShowFrame.TYPE:
 				currentFrame.tagIndexEnd = currentTagIndex;
@@ -496,9 +511,9 @@ class SWFTimelineContainer extends SWFEventDispatcher
 				}
 			}
 		}
-
+		
 		depthsAvailable.sort(sortNumeric);
-
+		
 		for(i in 0...depthsAvailable.length) {
 			var layer:Layer = new Layer(depthsAvailable[i], frames.length);
 			var frameIndices = depths.get (depthsAvailable[i]);
@@ -531,7 +546,7 @@ class SWFTimelineContainer extends SWFEventDispatcher
 			}
 			layers.push(layer);
 		}
-
+		
 		for(i in 0...frames.length) {
 			var frameObjs = frames[i].objects;
 			for (depth in frameObjs.keys()) {

@@ -7,7 +7,6 @@ import flash.display.DisplayObject;
 import flash.display.FrameLabel;
 import flash.display.Graphics;
 import flash.display.Sprite;
-import flash.geom.Matrix;
 import flash.events.Event;
 import flash.geom.Point;
 import flash.geom.Rectangle;
@@ -26,6 +25,7 @@ import format.swf.tags.TagDefineText;
 import format.swf.tags.TagPlaceObject;
 import format.swf.timeline.Frame;
 import format.swf.timeline.FrameObject;
+import openfl.geom.Matrix;
 
 
 typedef ChildObject = {
@@ -42,6 +42,11 @@ class MovieClip extends flash.display.MovieClip {
 	private var data:SWFTimelineContainer;
 	private var lastUpdate:Int;
 	private var playing:Bool;
+	
+	private var matrixLastModifiedAtIndex:Int = -1;
+	private var colorLastModifiedAtIndex:Int = -1;
+	private var nameLastModifiedAtIndex:Int = -1;
+	private var filterListLastModifiedAtIndex:Int = -1;
 	
 	private var objectPool:Map<Int, List<ChildObject>>;
 	private var activeObjects:Array<ChildObject>;
@@ -236,7 +241,7 @@ class MovieClip extends flash.display.MovieClip {
 	
 	private inline function placeObject (displayObject:DisplayObject, frameObject:FrameObject):Void {
 		
-		var firstTag:TagPlaceObject = cast data.tags [frameObject.placedAtIndex];
+		/*var firstTag:TagPlaceObject = cast data.tags [frameObject.placedAtIndex];
 		var lastTag:TagPlaceObject = null;
 		
 		if (frameObject.lastModifiedAtIndex > 0) {
@@ -264,7 +269,7 @@ class MovieClip extends flash.display.MovieClip {
 		if (lastTag != null) {
 			
 			if (lastTag.hasMatrix) {
-			
+				
 				var matrix = lastTag.matrix.matrix;
 				matrix.tx *= 1 / 20;
 				matrix.ty *= 1 / 20;
@@ -369,8 +374,225 @@ class MovieClip extends flash.display.MovieClip {
 			
 			if (lastTag != null) cast(displayObject, MorphShape).render(lastTag.ratio);
 			
+		}*/
+		
+		
+		
+		/*
+		
+		var frameIndex:Int;
+		var fo:FrameObject;
+		var tag:TagPlaceObject;
+		
+		try {
+			
+			if ( frameObject.lastModifiedAtIndex > 0 ) {
+				
+				matrixLastModifiedAt = -1;
+				colorLastModifiedAt = -1;
+				
+				frameIndex = __currentFrame;
+				while ( frameIndex > 0 ) {
+					
+					for ( fo in data.frames[ frameIndex ].objects ) {
+						
+						if ( fo.characterId == frameObject.characterId ) {
+							
+							if ( ( matrixTag == null ) && ( ( matrixLastModifiedAt == -1 ) || ( fo.lastModifiedAtIndex < matrixLastModifiedAt ) ) ) {
+								
+								tag = cast data.tags [fo.lastModifiedAtIndex];
+								
+								if ( tag.hasMatrix )
+									matrixTag = tag;
+								else
+									matrixLastModifiedAt = fo.lastModifiedAtIndex;
+							}
+							
+							if ( ( colorTransformTag == null ) && ( ( colorLastModifiedAt == -1 ) || ( fo.lastModifiedAtIndex < colorLastModifiedAt ) ) ) {
+								
+								tag = cast data.tags [fo.lastModifiedAtIndex];
+								
+								if ( tag.hasColorTransform )
+									colorTransformTag = tag;
+								else
+									colorLastModifiedAt = fo.lastModifiedAtIndex;
+							}
+							
+							if ( ( matrixTag != null ) && ( colorTransformTag != null ) )
+								break;
+						}
+					}
+					
+					if ( ( matrixTag != null ) && ( colorTransformTag != null ) )
+						break;
+					
+					frameIndex--;
+				}
+				
+				if ( matrixTag != null )
+					trace( "has matrixTag - hasMatrix? " + Std.string( matrixTag.hasMatrix ) );
+				else
+					trace( "doesn't have matrixTag" );
+					
+				if ( colorTransformTag != null )
+					trace( "has colorTransformTag - hasColorTransform? " + Std.string( colorTransformTag.hasColorTransform ) );
+				else
+					trace( "doesn't have colorTransformTag" );
+			}
+			
+			if ( matrixTag == null )
+				matrixTag = cast data.tags [frameObject.placedAtIndex];
+			
+			if ( colorTransformTag == null )
+				colorTransformTag = cast data.tags [frameObject.placedAtIndex];
+			
+			trace( "frame: " + Std.string( __currentFrame ) + " character: " + Std.string( frameObject.characterId ) );
+			trace( " matrix last modified at " + data.history.matrixLastModifiedAt( frameObject.characterId, __currentFrame - 1 ) );
+			trace( " color last modified at " + data.history.colorLastModifiedAt( frameObject.characterId, __currentFrame - 1 ) );
+		}
+		catch ( e:Dynamic ) {
+			
+			trace( e );
+		}*/
+		
+		
+		
+		var index:Int;
+		var tag:TagPlaceObject;
+		var render:Bool;
+		
+		render = false;
+		
+		try {
+			
+			index = data.script.nameLastModifiedAt( frameObject.id, __currentFrame - 1 );
+			
+			if ( index == -1 ) {
+				
+				displayObject.name = null;
+				
+				nameLastModifiedAtIndex = -1;
+			}
+			else if ( index != nameLastModifiedAtIndex ) {
+				
+				tag = cast data.tags[ index ];
+				
+				displayObject.name = tag.instanceName;
+				
+				nameLastModifiedAtIndex = index;
+			}
+		}
+		catch ( e:Dynamic ) {
+			
+			trace( e );
 		}
 		
+		try {
+			
+			index = data.script.matrixLastModifiedAt( frameObject.id, __currentFrame - 1 );
+			
+			if ( ( index != -1 ) && ( index != matrixLastModifiedAtIndex ) ) {
+				
+				tag = cast data.tags[ index ];
+				
+				var matrix = tag.matrix.matrix;
+				matrix.tx *= 1 / 20;
+				matrix.ty *= 1 / 20;
+				
+				displayObject.transform.matrix = matrix;
+				
+				matrixLastModifiedAtIndex = index;
+				
+				render = true;
+			}
+		}
+		catch ( e:Dynamic ) {
+			
+			trace( e );
+		}
+		
+		try {
+			
+			index = data.script.colorLastModifiedAt( frameObject.id, __currentFrame - 1 );
+			
+			if ( index == -1 ) {
+				
+				displayObject.transform.colorTransform = null;
+				
+				colorLastModifiedAtIndex = -1;
+				
+				render = true;
+			}
+			else if ( index != colorLastModifiedAtIndex ) {
+				
+				tag = cast data.tags[ index ];
+				
+				displayObject.transform.colorTransform = tag.colorTransform.colorTransform;
+				
+				colorLastModifiedAtIndex = index;
+				
+				render = true;
+			}
+		}
+		catch ( e:Dynamic ) {
+			
+			trace( e );
+		}
+		
+		try {
+			
+			index = data.script.filtersLastModifiedAt( frameObject.id, __currentFrame - 1 );
+			
+			if ( index == -1 ) {
+				
+				displayObject.filters = null;
+				
+				filterListLastModifiedAtIndex = -1;
+				
+				render = true;
+			}
+			else if ( index != filterListLastModifiedAtIndex ) {
+				
+				tag = cast data.tags[ index ];
+				
+				var filters = [];
+			
+				for (i in 0...tag.surfaceFilterList.length) {
+					
+					filters[i] = tag.surfaceFilterList[i].filter;
+					
+				}
+				
+				displayObject.filters = filters;
+				
+				filterListLastModifiedAtIndex = index;
+				
+				render = true;
+			}
+		}
+		catch ( e:Dynamic ) {
+			
+			trace( e );
+		}
+		
+		if ( Std.is(displayObject, MorphShape ) ) {
+			
+			try {
+				
+				index = data.script.ratioLastModifiedAt( frameObject.id, __currentFrame - 1 );
+				
+				if ( ( index == -1 ) && ( index != filterListLastModifiedAtIndex ) ) {
+					
+					tag = cast data.tags[ index ];
+					
+					cast(displayObject, MorphShape).render( tag.ratio );
+				}
+			}
+			catch ( e:Dynamic ) {
+				
+				trace( e );
+			}			
+		}
 	}
 	
 	
@@ -529,8 +751,6 @@ class MovieClip extends flash.display.MovieClip {
 					
 					addChild(displayObject);
 				}
-
-				
 			}
 		}
 		
@@ -629,17 +849,17 @@ class MovieClip extends flash.display.MovieClip {
 				renderFrame (frameIndex);
 				
 			}
-
+			
 			var frame = data.frames[frameIndex];
 			
 			//#if flash
 			__currentFrameLabel = frame.label;
-
+			
 			
 			if (frameIndex == 0 || frame.label != null) {
-
+				
 				__currentLabel = frame.label;
-
+				
 			}
 			//#end
 			

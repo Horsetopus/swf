@@ -12,6 +12,7 @@ import format.swf.events.SWFProgressEvent;
 import flash.utils.ByteArray;
 import flash.utils.CompressionAlgorithm;
 import flash.errors.Error;
+import format.swf.tags.ITag;
 import format.swf.tags.TagSymbolClass;
 
 
@@ -57,19 +58,19 @@ class SWFRoot extends SWFTimelineContainer
 				for (symbol in cast (tag, TagSymbolClass).symbols) {
 					
 					symbols.set (symbol.name, symbol.tagId);
-					
 				}
-				
 			}
-			
 		}
 		
+		/*trace( "------" );
+		var tag:ITag;
+		for ( tag in tags )
+			trace( tag.toString() );
+		trace( "++++++" );*/
 		
 		#if test_abc
 		if (abcData != null) bindABCWithSymbols();
 		#end
-		
-		
 	}
 	
 	#if test_abc
