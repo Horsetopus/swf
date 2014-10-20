@@ -43,11 +43,6 @@ class MovieClip extends flash.display.MovieClip {
 	private var lastUpdate:Int;
 	private var playing:Bool;
 	
-	private var matrixLastModifiedAtIndex:Int = -1;
-	private var colorLastModifiedAtIndex:Int = -1;
-	private var nameLastModifiedAtIndex:Int = -1;
-	private var filterListLastModifiedAtIndex:Int = -1;
-	
 	private var objectPool:Map<Int, List<ChildObject>>;
 	private var activeObjects:Array<ChildObject>;
 	
@@ -459,9 +454,6 @@ class MovieClip extends flash.display.MovieClip {
 		
 		var index:Int;
 		var tag:TagPlaceObject;
-		var render:Bool;
-		
-		render = false;
 		
 		try {
 			
@@ -470,16 +462,12 @@ class MovieClip extends flash.display.MovieClip {
 			if ( index == -1 ) {
 				
 				displayObject.name = null;
-				
-				nameLastModifiedAtIndex = -1;
 			}
-			else if ( index != nameLastModifiedAtIndex ) {
+			else {
 				
 				tag = cast data.tags[ index ];
 				
 				displayObject.name = tag.instanceName;
-				
-				nameLastModifiedAtIndex = index;
 			}
 		}
 		catch ( e:Dynamic ) {
@@ -491,7 +479,7 @@ class MovieClip extends flash.display.MovieClip {
 			
 			index = data.script.matrixLastModifiedAt( frameObject.id, __currentFrame - 1 );
 			
-			if ( ( index != -1 ) && ( index != matrixLastModifiedAtIndex ) ) {
+			if ( index != -1 ) {
 				
 				tag = cast data.tags[ index ];
 				
@@ -500,10 +488,6 @@ class MovieClip extends flash.display.MovieClip {
 				matrix.ty *= 1 / 20;
 				
 				displayObject.transform.matrix = matrix;
-				
-				matrixLastModifiedAtIndex = index;
-				
-				render = true;
 			}
 		}
 		catch ( e:Dynamic ) {
@@ -518,20 +502,12 @@ class MovieClip extends flash.display.MovieClip {
 			if ( index == -1 ) {
 				
 				displayObject.transform.colorTransform = null;
-				
-				colorLastModifiedAtIndex = -1;
-				
-				render = true;
 			}
-			else if ( index != colorLastModifiedAtIndex ) {
+			else {
 				
 				tag = cast data.tags[ index ];
 				
 				displayObject.transform.colorTransform = tag.colorTransform.colorTransform;
-				
-				colorLastModifiedAtIndex = index;
-				
-				render = true;
 			}
 		}
 		catch ( e:Dynamic ) {
@@ -546,12 +522,8 @@ class MovieClip extends flash.display.MovieClip {
 			if ( index == -1 ) {
 				
 				displayObject.filters = null;
-				
-				filterListLastModifiedAtIndex = -1;
-				
-				render = true;
 			}
-			else if ( index != filterListLastModifiedAtIndex ) {
+			else {
 				
 				tag = cast data.tags[ index ];
 				
@@ -564,10 +536,6 @@ class MovieClip extends flash.display.MovieClip {
 				}
 				
 				displayObject.filters = filters;
-				
-				filterListLastModifiedAtIndex = index;
-				
-				render = true;
 			}
 		}
 		catch ( e:Dynamic ) {
@@ -581,7 +549,7 @@ class MovieClip extends flash.display.MovieClip {
 				
 				index = data.script.ratioLastModifiedAt( frameObject.id, __currentFrame - 1 );
 				
-				if ( ( index == -1 ) && ( index != filterListLastModifiedAtIndex ) ) {
+				if ( index != -1 ) {
 					
 					tag = cast data.tags[ index ];
 					
