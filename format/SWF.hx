@@ -5,6 +5,7 @@ import flash.display.BitmapData;
 import flash.events.Event;
 import flash.events.EventDispatcher;
 import flash.utils.ByteArray;
+import format.swf.events.SWFProgressEvent;
 import format.swf.instance.Bitmap;
 import format.swf.instance.MovieClip;
 import format.swf.instance.SimpleButton;
@@ -16,6 +17,8 @@ import format.swf.tags.TagDefineBitsLossless;
 import format.swf.tags.TagDefineButton2;
 import format.swf.tags.TagDefineSprite;
 import format.swf.tags.TagSymbolClass;
+import openfl.display.Sprite;
+import openfl.Lib;
 
 #if !haxe3
 typedef Map<String, T> = Hash<T>;
@@ -35,15 +38,28 @@ class SWF extends EventDispatcher {
 	public var symbols:Map <String, Int>;
 	public var width (default, null):Int;
 	
-	private var complete:Bool;
+	public var complete(default, null):Bool;
 	
 	
-	public function new (bytes:ByteArray) {
+	public function new ( bytes:ByteArray, enterFrameProvider:Sprite ) {
 		
 		super ();
 		
 		//SWFTimelineContainer.AUTOBUILD_LAYERS = true;
-		data = new SWFRoot (bytes);
+		
+		data = new SWFRoot( bytes, enterFrameProvider );
+		
+		data.addEventListener( SWFProgressEvent.PROGRESS, onDataProgress );
+		data.addEventListener( SWFProgressEvent.COMPLETE, onDataComplete );
+	}
+	
+	private function onDataProgress( swfProgressEvent:SWFProgressEvent ):Void {
+	}
+	
+	private function onDataComplete( swfProgressEvent:SWFProgressEvent ):Void {
+		
+		data.removeEventListener( SWFProgressEvent.PROGRESS, onDataProgress );
+		data.removeEventListener( SWFProgressEvent.COMPLETE, onDataComplete );
 		
 		backgroundColor = data.backgroundColor;
 		frameRate = data.frameRate;

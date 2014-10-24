@@ -25,6 +25,7 @@ import format.swf.tags.TagDefineText;
 import format.swf.tags.TagPlaceObject;
 import format.swf.timeline.Frame;
 import format.swf.timeline.FrameObject;
+import openfl.geom.ColorTransform;
 import openfl.geom.Matrix;
 
 
@@ -461,7 +462,7 @@ class MovieClip extends flash.display.MovieClip {
 			
 			if ( index == -1 ) {
 				
-				displayObject.name = null;
+				displayObject.name = "";
 			}
 			else {
 				
@@ -501,7 +502,7 @@ class MovieClip extends flash.display.MovieClip {
 			
 			if ( index == -1 ) {
 				
-				displayObject.transform.colorTransform = null;
+				displayObject.transform.colorTransform = new ColorTransform();
 			}
 			else {
 				
@@ -528,7 +529,7 @@ class MovieClip extends flash.display.MovieClip {
 				tag = cast data.tags[ index ];
 				
 				var filters = [];
-			
+				
 				for (i in 0...tag.surfaceFilterList.length) {
 					
 					filters[i] = tag.surfaceFilterList[i].filter;

@@ -14,6 +14,9 @@ import flash.utils.CompressionAlgorithm;
 import flash.errors.Error;
 import format.swf.tags.ITag;
 import format.swf.tags.TagSymbolClass;
+import openfl.display.Sprite;
+import openfl.events.EventDispatcher;
+import openfl.Lib;
 
 
 class SWFRoot extends SWFTimelineContainer
@@ -34,12 +37,17 @@ class SWFRoot extends SWFTimelineContainer
 	private static inline var FILE_LENGTH_POS:Int = 4;
 	private static inline var COMPRESSION_START_POS:Int = 8;
 	
-	public function new(ba:ByteArray = null) {
+	public function new(ba:ByteArray, enterFrameProvider:Sprite ) {
+		
 		super ();
+		
+		this.enterFrameProvider = Lib.current;
+		
 		bytes = new SWFData();
-		if (ba != null) {
-			loadBytes(ba);
-		} else {
+		//if (ba != null) {
+			//loadBytes(ba);			
+			loadBytesAsync( ba );
+		/*} else {
 			version = 10;
 			fileLength = 0;
 			fileLengthCompressed = 0;
@@ -48,7 +56,22 @@ class SWFRoot extends SWFTimelineContainer
 			frameCount = 1;
 			compressed = true;
 			compressionMethod = CompressionAlgorithm.ZLIB;
-		}
+		}*/
+		
+		/*trace( "------" );
+		var tag:ITag;
+		for ( tag in tags )
+			trace( tag.toString() );
+		trace( "++++++" );*/
+		
+		#if test_abc
+		if (abcData != null) bindABCWithSymbols();
+		#end
+	}
+	
+	override private function parseTagsFinalize():Void {
+		
+		super.parseTagsFinalize();
 		
 		symbols = new Map <String, Int> ();
 		for (tag in this.tags) {
@@ -61,16 +84,6 @@ class SWFRoot extends SWFTimelineContainer
 				}
 			}
 		}
-		
-		/*trace( "------" );
-		var tag:ITag;
-		for ( tag in tags )
-			trace( tag.toString() );
-		trace( "++++++" );*/
-		
-		#if test_abc
-		if (abcData != null) bindABCWithSymbols();
-		#end
 	}
 	
 	#if test_abc
@@ -197,7 +210,7 @@ class SWFRoot extends SWFTimelineContainer
 		parseTags(data, version);
 	}
 	
-	public function parseAsync(data:SWFData):Void {
+	public function parseAsync(data:SWFData):Void {		
 		bytes = data;
 		parseHeader();
 		parseTagsAsync(data, version);

@@ -155,6 +155,11 @@ class SWFTimelineContainer extends SWFEventDispatcher
 		while ((tag = parseTag(data)) != null && tag.type != TagEnd.TYPE) {};
 		parseTagsFinalize();
 		
+		buildScript();
+	}
+	
+	private function buildScript():Void {
+		
 		var frame:Frame;
 		script = new Script();
 		for ( frame in frames ) {
@@ -162,31 +167,49 @@ class SWFTimelineContainer extends SWFEventDispatcher
 			script.pushFrame( tags, frame );
 		}
 		
-		trace( script.toString() );
+		//trace( script.toString() );
 	}
 	
 	public function parseTagsAsync(data:SWFData, version:Int):Void {
+		
 		parseTagsInit(data, version);
+		
 		enterFrameProvider.addEventListener(Event.ENTER_FRAME, parseTagsAsyncHandler);
 	}
 	
 	private function parseTagsAsyncHandler(event:Event):Void {
+		
 		enterFrameProvider.removeEventListener(Event.ENTER_FRAME, parseTagsAsyncHandler);
-		if(dispatchEvent(new SWFProgressEvent(SWFProgressEvent.PROGRESS, _tmpData.position, _tmpData.length, false, true))) {
-			parseTagsAsyncInternal();
-		}
+		
+		if ( ! dispatchEvent( new SWFProgressEvent( SWFProgressEvent.PROGRESS, _tmpData.position, _tmpData.length, false, true ) ) )
+			return;
+		
+		parseTagsAsyncInternal();
 	}
 	
 	private function parseTagsAsyncInternal():Void {
 		var tag:ITag;
 		var time:Int = flash.Lib.getTimer();
-		while ((tag = parseTag(_tmpData, true)) != null && tag.type != TagEnd.TYPE) {
-			if((flash.Lib.getTimer() - time) > TIMEOUT) {
-				enterFrameProvider.addEventListener(Event.ENTER_FRAME, parseTagsAsyncHandler);
-				return;
+		
+		try {
+			while ( ( tag = parseTag( _tmpData, true ) ) != null && tag.type != TagEnd.TYPE ) {
+				
+				if ( ( flash.Lib.getTimer() - time ) > TIMEOUT ) {
+					
+					enterFrameProvider.addEventListener(Event.ENTER_FRAME, parseTagsAsyncHandler);
+					return;
+				}
 			}
 		}
+		catch ( e:Dynamic ) {
+			
+			trace( e );
+		}
+		
 		parseTagsFinalize();
+		
+		buildScript();
+		
 		if(eof) {
 			dispatchEvent(new SWFErrorEvent(SWFErrorEvent.ERROR, SWFErrorEvent.REASON_EOF));
 		} else {
